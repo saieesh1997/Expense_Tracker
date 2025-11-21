@@ -1,5 +1,8 @@
+import 'dart:ffi';
+
 import 'package:expense_tracker/Models/expense_model.dart';
 import 'package:expense_tracker/expenseList.dart';
+import 'package:expense_tracker/widgets/chart.dart';
 import 'package:expense_tracker/widgets/create_new_expense.dart';
 import 'package:flutter/material.dart';
 
@@ -33,15 +36,63 @@ class _ExpenseState extends State<Expense> {
   ];
 
   void _onPressedBottomSheet() {
-    showModalBottomSheet(context: context, builder: (ctx) => NewExpense());
+    showModalBottomSheet(
+      // isScrollControlled: true,
+      context: context,
+      builder: (ctx) => NewExpense(onAddExpense: _addExpense),
+    );
+  }
+
+  void _addExpense(ExpenseModel expense) {
+    setState(() {
+      _registeredExpenseList.add(expense);
+    });
+  }
+
+  void _removeExpense(ExpenseModel expense) {
+    final expenseIndex = _registeredExpenseList.indexOf(expense);
+    setState(() {
+      _registeredExpenseList.remove(expense);
+    });
+    ScaffoldMessenger.of(context).clearSnackBars();
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text('Expense Deleted'),
+        duration: Duration(seconds: 2),
+        action: SnackBarAction(
+          label: 'Undo',
+          onPressed: () {
+            setState(() {
+              _registeredExpenseList.insert(expenseIndex, expense);
+            });
+          },
+        ),
+      ),
+    );
   }
 
   @override
   Widget build(BuildContext context) {
+    Widget maincontent = Center(
+      child: Text("No Expenses Found, Add some By Clicking on + button!"),
+    );
+    if (_registeredExpenseList.isNotEmpty) {
+      maincontent = Expenselist(
+        expenses: _registeredExpenseList,
+        onRemoveExpense: _removeExpense,
+      );
+    }
     return Scaffold(
       appBar: AppBar(
-        backgroundColor: Colors.purple[50],
-        title: Text('Expense Tracker'),
+        backgroundColor: const Color.fromARGB(255, 78, 5, 89),
+        title: Text(
+          'Expense Tracker',
+          style: TextStyle(
+            fontStyle: FontStyle.italic,
+            fontWeight: FontWeight.bold,
+            fontSize: 20,
+          ),
+        ),
         actions: [
           IconButton(
             onPressed: () {
@@ -53,8 +104,8 @@ class _ExpenseState extends State<Expense> {
       ),
       body: Column(
         children: [
-          // Text('Expense chart'),
-          Expanded(child: Expenselist(expenses: _registeredExpenseList)),
+          SizedBox(height: 200, child: Chart(expenses: _registeredExpenseList)),
+          Expanded(child: maincontent),
         ],
       ),
     );
