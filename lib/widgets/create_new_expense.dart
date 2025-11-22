@@ -1,3 +1,5 @@
+import 'dart:ffi';
+
 import 'package:expense_tracker/Models/expense_model.dart';
 import 'package:flutter/material.dart';
 
@@ -141,6 +143,7 @@ class _NewExpenseState extends State<NewExpense> {
                 },
                 child: Text("Cancel"),
               ),
+              SizedBox(width: 8),
               ElevatedButton(
                 onPressed: () {
                   _submitExpenseData();
